@@ -11,6 +11,9 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/appc/docker2aci/lib/types"
+	"github.com/appc/docker2aci/lib/util"
+	"github.com/appc/docker2aci/tarball"
 	"github.com/chengtiesheng/ContainerAnalyzer/attr"
 )
 
@@ -24,8 +27,8 @@ func NewFileBackend(file *os.File) *FileBackend {
 	}
 }
 
-func (lb *FileBackend) GetImageInfo(dockerURL string) ([]string, *types.ParsedDockerURL, error) {
-	parsedDockerURL := common.ParseDockerURL(dockerURL)
+func (lb *FileBackend) GetImageInfo(dockerURL string) ([]string, *attr.ParsedDockerURL, error) {
+	parsedDockerURL := attr.ParseDockerURL(dockerURL)
 
 	appImageID, parsedDockerURL, err := getImageID(lb.file, parsedDockerURL)
 	if err != nil {
@@ -40,22 +43,22 @@ func (lb *FileBackend) GetImageInfo(dockerURL string) ([]string, *types.ParsedDo
 	return ancestry, parsedDockerURL, nil
 }
 
-func (lb *FileBackend) GetLayerInfo(layerID string) (*attr.DockerImageData, error) {
+func (lb *FileBackend) GetLayerInfo(layerID string, dockerURL *attr.ParsedDockerURL) (*attr.DockerImageData, error) {
 
 	j, err := getJson(lb.file, layerID)
 	if err != nil {
-		return "", nil, fmt.Errorf("error getting image json: %v", err)
+		return nil, nil
 	}
 
 	layerData := attr.DockerImageData{}
 	if err := json.Unmarshal(j, &layerData); err != nil {
-		return "", nil, fmt.Errorf("error unmarshaling layer data: %v", err)
+		return nil, nil
 	}
 
 	return &layerData, nil
 }
 
-func getImageID(file *os.File, dockerURL *types.ParsedDockerURL) (string, *types.ParsedDockerURL, error) {
+func getImageID(file *os.File, dockerURL *attr.ParsedDockerURL) (string, *attr.ParsedDockerURL, error) {
 	type tags map[string]string
 	type apps map[string]tags
 
@@ -120,7 +123,7 @@ func getImageID(file *os.File, dockerURL *types.ParsedDockerURL) (string, *types
 			}
 
 			if dockerURL == nil {
-				dockerURL = &types.ParsedDockerURL{
+				dockerURL = &attr.ParsedDockerURL{
 					IndexURL:  "",
 					Tag:       tag,
 					ImageName: appName,

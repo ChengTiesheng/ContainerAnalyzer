@@ -12,7 +12,8 @@ import (
 	"strings"
 	"time"
 
-	"github.com/chengtiesheng/Analyzer/attr"
+	"github.com/appc/docker2aci/lib/types"
+	"github.com/chengtiesheng/ContainerAnalyzer/attr"
 	"github.com/coreos/ioprogress"
 )
 
@@ -30,6 +31,26 @@ type v2Manifest struct {
 		V1Compatibility string `json:"v1Compatibility"`
 	} `json:"history"`
 	Signature []byte `json:"signature"`
+}
+
+func (rb *RepositoryBackend) getLayerInfoV2(layerID string, dockerURL *attr.ParsedDockerURL) (*attr.DockerImageData, error) {
+	manifest := rb.imageManifests[*dockerURL]
+
+	layerIndex, err := getLayerIndex(layerID, manifest)
+	if err != nil {
+		return "", nil, err
+	}
+
+	if len(manifest.History) <= layerIndex {
+		return "", nil, fmt.Errorf("history not found for layer %s", layerID)
+	}
+
+	layerData := types.DockerImageData{}
+	if err := json.Unmarshal([]byte(manifest.History[layerIndex].V1Compatibility), &layerData); err != nil {
+		return "", nil, fmt.Errorf("error unmarshaling layer data: %v", err)
+	}
+
+	return &layerData, nil
 }
 
 func (rb *RepositoryBackend) supportsV2(indexURL string) (bool, error) {
@@ -137,7 +158,7 @@ func getLayerIndex(layerID string, manifest v2Manifest) (int, error) {
 	return -1, fmt.Errorf("layer not found in manifest: %s", layerID)
 }
 
-func (rb *RepositoryBackend) getLayerV2(layerID string, dockerURL *types.ParsedDockerURL, tmpDir string) (*os.File, error) {
+func (rb *RepositoryBackend) getLayerV2(layerID string, dockerURL *attr.ParsedDockerURL, tmpDir string) (*os.File, error) {
 	url := rb.protocol() + path.Join(dockerURL.IndexURL, "v2", dockerURL.ImageName, "blobs", layerID)
 	req, err := http.NewRequest("GET", url, nil)
 	if err != nil {

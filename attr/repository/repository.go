@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/appc/docker2aci/lib/types"
 	"github.com/chengtiesheng/ContainerAnalyzer/attr"
 )
 
@@ -21,7 +22,7 @@ func NewRepositoryBackend(username string, password string, insecure bool) *Repo
 		insecure:          insecure,
 		hostsV2Support:    make(map[string]bool),
 		hostsV2AuthTokens: make(map[string]map[string]string),
-		imageManifests:    make(map[types.ParsedDockerURL]v2Manifest),
+		imageManifests:    make(map[attr.ParsedDockerURL]v2Manifest),
 	}
 }
 
@@ -50,5 +51,13 @@ func (rb *RepositoryBackend) protocol() string {
 		return "http://"
 	} else {
 		return "https://"
+	}
+}
+
+func (rb *RepositoryBackend) GetLayerInfo(layerID string, dockerURL *types.ParsedDockerURL) (*attr.DockerImageData, error) {
+	if rb.hostsV2Support[dockerURL.IndexURL] {
+		return rb.getLayerInfoV2(layerID, dockerURL)
+	} else {
+		return rb.getLayerV1(layerID, dockerURL)
 	}
 }

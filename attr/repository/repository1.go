@@ -12,6 +12,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/appc/docker2aci/lib/types"
 	"github.com/chengtiesheng/ContainerAnalyzer/attr"
 	"github.com/coreos/ioprogress"
 )
@@ -20,6 +21,21 @@ type RepoData struct {
 	Tokens    []string
 	Endpoints []string
 	Cookie    []string
+}
+
+func (rb *RepositoryBackend) getLayerInfoV1(layerID string, dockerURL *types.ParsedDockerURL) (*attr.DockerImageData, error) {
+
+	j, size, err := rb.getJsonV1(layerID, rb.repoData.Endpoints[0], rb.repoData)
+	if err != nil {
+		return nil, nil
+	}
+
+	layerData := attr.DockerImageData{}
+	if err := json.Unmarshal(j, &layerData); err != nil {
+		return nil, nil
+	}
+
+	return &layerData, nil
 }
 
 func (rb *RepositoryBackend) getImageInfoV1(dockerURL *attr.ParsedDockerURL) ([]string, *attr.ParsedDockerURL, error) {

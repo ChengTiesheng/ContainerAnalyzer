@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/appc/docker2aci/lib/common"
 	"github.com/chengtiesheng/ContainerAnalyzer/attr"
 	"github.com/chengtiesheng/ContainerAnalyzer/attr/file"
 	"github.com/chengtiesheng/ContainerAnalyzer/attr/repository"
@@ -12,7 +13,7 @@ import (
 
 type AnalyseBackend interface {
 	GetImageInfo(dockerUrl string) ([]string, *attr.ParsedDockerURL, error)
-	GetLayerInfo(layerID string) (*attr.DockerImg_Attr, error)
+	GetLayerInfo(layerID string, dockerURL *attr.ParsedDockerURL) (*attr.DockerImg_Attr, error)
 }
 
 func Analyse(dockerURL string, username string, password string, insecure bool) error {
