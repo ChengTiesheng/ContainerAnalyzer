@@ -37,7 +37,7 @@ func main() {
 		return
 	}
 
-	if err := analyseDockerImage(args[0], *flagImage, *flagDebug, *flagInsecure); err != nil {
+	if err := analyse.AnalyseDockerImage(args[0], *flagImage, *flagDebug, *flagInsecure); err != nil {
 		fmt.Fprintf(os.Stderr, "Error: %v\n", err)
 		os.Exit(1)
 	}
