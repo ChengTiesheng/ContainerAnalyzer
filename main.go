@@ -9,7 +9,7 @@ import (
 )
 
 var (
-	flagImage    = flag.String("image", "", "When analyse a local file, it selects a particular image to analyse. Format: IMAGE_NAME[:TAG]")
+	flagImage    = flag.String("image", "", "When analysing a local file, it selects a particular image to analyse. Format: IMAGE_NAME[:TAG]")
 	flagDebug    = flag.Bool("debug", false, "Enables debug messages")
 	flagInsecure = flag.Bool("insecure", false, "Uses unencrypted connections when fetching images")
 )

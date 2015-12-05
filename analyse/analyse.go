@@ -6,6 +6,7 @@ import (
 	"os"
 	"strings"
 
+	"github.com/Sirupsen/logrus"
 	"github.com/chengtiesheng/ContainerAnalyzer/attr"
 	"github.com/chengtiesheng/ContainerAnalyzer/attr/local"
 	"github.com/chengtiesheng/ContainerAnalyzer/attr/registry"
@@ -18,7 +19,9 @@ type AnalyseBackend interface {
 
 func AnalyseDockerImage(arg string, flagImage string, flagDebug bool, flagInsecure bool) error {
 	if flagDebug {
-		//TODO
+		logrus.SetLevel(logrus.DebugLevel)
+	} else {
+		logrus.SetLevel(logrus.InfoLevel)
 	}
 
 	// try to analyse a local file
@@ -40,23 +43,23 @@ func AnalyseDockerImage(arg string, flagImage string, flagDebug bool, flagInsecu
 			return fmt.Errorf("error reading .dockercfg file: %v", err)
 		}
 
-		err = Analyse(dockerURL, username, password, flagInsecure)
+		err = AnalyseRegistry(dockerURL, username, password, flagInsecure)
 	} else {
-		err = AnalyseFile(flagImage, arg)
+		err = AnalyseLocal(flagImage, arg)
 	}
 	if err != nil {
-		return fmt.Errorf("conversion error: %v", err)
+		return fmt.Errorf("analyse error: %v", err)
 	}
 
 	return nil
 }
 
-func Analyse(dockerURL string, username string, password string, insecure bool) error {
+func AnalyseRegistry(dockerURL string, username string, password string, insecure bool) error {
 	repositoryBackend := registry.NewRepositoryBackend(username, password, insecure)
 	return analyseReal(repositoryBackend, dockerURL)
 }
 
-func AnalyseFile(dockerURL string, filePath string) error {
+func AnalyseLocal(dockerURL string, filePath string) error {
 	f, err := os.Open(filePath)
 	if err != nil {
 		return fmt.Errorf("error opening file: %v", err)
@@ -80,21 +83,25 @@ func GetDockercfgAuth(indexServer string) (string, string, error) {
 }
 
 func analyseReal(backend AnalyseBackend, dockerURL string) error {
-	fmt.Println("Getting image info...")
+	fmt.Println("Getting image attribution information...")
 	ancestry, parsedDockerURL, err := backend.GetImageInfo(dockerURL)
 	if err != nil {
 		return err
 	}
 
-	j := 0
+	var bPrinted bool
 	for i := len(ancestry) - 1; i >= 0; i-- {
 		layerID := ancestry[i]
 
 		layerData, _ := backend.GetLayerInfo(layerID, parsedDockerURL)
 
 		imgAttr, _ := attr.AnalyseDockerManifest(*layerData, parsedDockerURL)
-		j++
-		fmt.Printf("\n============Layer%v================\n", j)
+		if !bPrinted {
+			fmt.Println("Prompt: Layer0 is the upper layer")
+			bPrinted = true
+		}
+
+		fmt.Printf("\n============Layer%v================\n", i)
 		printDockerImgAttr(imgAttr)
 	}
 
