@@ -15,6 +15,41 @@ type AnalyseBackend interface {
 	GetLayerInfo(layerID string, dockerURL *attr.ParsedDockerURL) (*attr.DockerImageData, error)
 }
 
+func AnalyseDockerImage(arg string, flagImage string, flagDebug bool, flagInsecure bool) error {
+	if flagDebug {
+		//TODO
+	}
+
+	// try to analyse a local file
+	u, err := url.Parse(arg)
+	if err != nil {
+		return fmt.Errorf("error parsing argument: %v", err)
+	}
+	if u.Scheme == "docker" {
+		if flagImage != "" {
+			return fmt.Errorf("flag --image works only with files.")
+		}
+		dockerURL := strings.TrimPrefix(arg, "docker://")
+
+		indexServer := analyse.GetIndexName(dockerURL)
+
+		var username, password string
+		username, password, err = analyse.GetDockercfgAuth(indexServer)
+		if err != nil {
+			return fmt.Errorf("error reading .dockercfg file: %v", err)
+		}
+
+		err = analyse.Analyse(dockerURL, username, password, flagInsecure)
+	} else {
+		err = analyse.AnalyseFile(flagImage, arg)
+	}
+	if err != nil {
+		return fmt.Errorf("conversion error: %v", err)
+	}
+
+	return nil
+}
+
 func Analyse(dockerURL string, username string, password string, insecure bool) error {
 	repositoryBackend := repository.NewRepositoryBackend(username, password, insecure)
 	return analyseReal(repositoryBackend, dockerURL)
