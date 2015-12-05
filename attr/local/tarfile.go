@@ -1,4 +1,4 @@
-package file
+package local
 
 import (
 	"archive/tar"
@@ -22,4 +22,3 @@ func (t *TarFile) Name() string {
 func (t *TarFile) Linkname() string {
 	return t.Header.Linkname
 }
-

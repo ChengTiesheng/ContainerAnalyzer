@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/chengtiesheng/ContainerAnalyzer/attr"
-	"github.com/chengtiesheng/ContainerAnalyzer/attr/file"
-	"github.com/chengtiesheng/ContainerAnalyzer/attr/repository"
+	"github.com/chengtiesheng/ContainerAnalyzer/attr/local"
+	"github.com/chengtiesheng/ContainerAnalyzer/attr/registry"
 )
 
 type AnalyseBackend interface {
@@ -52,7 +52,7 @@ func AnalyseDockerImage(arg string, flagImage string, flagDebug bool, flagInsecu
 }
 
 func Analyse(dockerURL string, username string, password string, insecure bool) error {
-	repositoryBackend := repository.NewRepositoryBackend(username, password, insecure)
+	repositoryBackend := registry.NewRepositoryBackend(username, password, insecure)
 	return analyseReal(repositoryBackend, dockerURL)
 }
 
@@ -63,7 +63,7 @@ func AnalyseFile(dockerURL string, filePath string) error {
 	}
 	defer f.Close()
 
-	fileBackend := file.NewFileBackend(f)
+	fileBackend := local.NewFileBackend(f)
 	return analyseReal(fileBackend, dockerURL)
 }
 

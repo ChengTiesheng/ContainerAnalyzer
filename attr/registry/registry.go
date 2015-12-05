@@ -1,4 +1,4 @@
-package repository
+package registry
 
 import "github.com/chengtiesheng/ContainerAnalyzer/attr"
 

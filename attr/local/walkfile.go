@@ -1,4 +1,4 @@
-package file
+package local
 
 import (
 	"archive/tar"
@@ -27,4 +27,3 @@ func Walk(tarReader tar.Reader, walkFunc func(t *TarFile) error) error {
 	}
 	return nil
 }
-
