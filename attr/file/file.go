@@ -11,9 +11,6 @@ import (
 	"path/filepath"
 	"strings"
 
-	"github.com/appc/docker2aci/lib/types"
-	"github.com/appc/docker2aci/lib/util"
-	"github.com/appc/docker2aci/tarball"
 	"github.com/chengtiesheng/ContainerAnalyzer/attr"
 )
 
@@ -69,7 +66,7 @@ func getImageID(file *os.File, dockerURL *attr.ParsedDockerURL) (string, *attr.P
 
 	var imageID string
 	var appName string
-	reposWalker := func(t *tarball.TarFile) error {
+	reposWalker := func(t *TarFile) error {
 		if filepath.Clean(t.Name()) == "repositories" {
 			repob, err := ioutil.ReadAll(t.TarStream)
 			if err != nil {
@@ -137,7 +134,7 @@ func getImageID(file *os.File, dockerURL *attr.ParsedDockerURL) (string, *attr.P
 	}
 
 	tr := tar.NewReader(file)
-	if err := tarball.Walk(*tr, reposWalker); err != nil {
+	if err := Walk(*tr, reposWalker); err != nil {
 		return "", nil, err
 	}
 
@@ -160,7 +157,7 @@ func getTarFileBytes(file *os.File, path string) ([]byte, error) {
 	}
 
 	var fileBytes []byte
-	fileWalker := func(t *tarball.TarFile) error {
+	fileWalker := func(t *TarFile) error {
 		if filepath.Clean(t.Name()) == path {
 			fileBytes, err = ioutil.ReadAll(t.TarStream)
 			if err != nil {
@@ -172,7 +169,7 @@ func getTarFileBytes(file *os.File, path string) ([]byte, error) {
 	}
 
 	tr := tar.NewReader(file)
-	if err := tarball.Walk(*tr, fileWalker); err != nil {
+	if err := Walk(*tr, fileWalker); err != nil {
 		return nil, err
 	}
 
@@ -184,7 +181,7 @@ func getTarFileBytes(file *os.File, path string) ([]byte, error) {
 }
 
 func extractEmbeddedLayer(file *os.File, layerID string, outputPath string) (*os.File, error) {
-	util.Info("Extracting ", layerID[:12], "\n")
+	fmt.Println("Extracting ", layerID[:12], "\n")
 
 	_, err := file.Seek(0, 0)
 	if err != nil {
@@ -194,7 +191,7 @@ func extractEmbeddedLayer(file *os.File, layerID string, outputPath string) (*os
 	layerTarPath := path.Join(layerID, "layer.tar")
 
 	var layerFile *os.File
-	fileWalker := func(t *tarball.TarFile) error {
+	fileWalker := func(t *TarFile) error {
 		if filepath.Clean(t.Name()) == layerTarPath {
 			layerFile, err = os.Create(outputPath)
 			if err != nil {
@@ -211,7 +208,7 @@ func extractEmbeddedLayer(file *os.File, layerID string, outputPath string) (*os
 	}
 
 	tr := tar.NewReader(file)
-	if err := tarball.Walk(*tr, fileWalker); err != nil {
+	if err := Walk(*tr, fileWalker); err != nil {
 		return nil, err
 	}
 
@@ -248,14 +245,14 @@ func getParent(file *os.File, imgID string) (string, error) {
 	}
 
 	jsonPath := filepath.Join(imgID, "json")
-	parentWalker := func(t *tarball.TarFile) error {
+	parentWalker := func(t *TarFile) error {
 		if filepath.Clean(t.Name()) == jsonPath {
 			jsonb, err := ioutil.ReadAll(t.TarStream)
 			if err != nil {
 				return fmt.Errorf("error reading layer json: %v", err)
 			}
 
-			var dockerData types.DockerImageData
+			var dockerData attr.DockerImageData
 			if err := json.Unmarshal(jsonb, &dockerData); err != nil {
 				return fmt.Errorf("error unmarshaling layer data: %v", err)
 			}
@@ -267,7 +264,7 @@ func getParent(file *os.File, imgID string) (string, error) {
 	}
 
 	tr := tar.NewReader(file)
-	if err := tarball.Walk(*tr, parentWalker); err != nil {
+	if err := Walk(*tr, parentWalker); err != nil {
 		return "", err
 	}
 
