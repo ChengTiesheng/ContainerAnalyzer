@@ -16,41 +16,6 @@ var (
 	flagInsecure = flag.Bool("insecure", false, "Uses unencrypted connections when fetching images")
 )
 
-func analyseDockerImage(arg string, flagImage string, flagDebug bool, flagInsecure bool) error {
-	if flagDebug {
-		//TODO
-	}
-
-	// try to analyse a local file
-	u, err := url.Parse(arg)
-	if err != nil {
-		return fmt.Errorf("error parsing argument: %v", err)
-	}
-	if u.Scheme == "docker" {
-		if flagImage != "" {
-			return fmt.Errorf("flag --image works only with files.")
-		}
-		dockerURL := strings.TrimPrefix(arg, "docker://")
-
-		indexServer := analyse.GetIndexName(dockerURL)
-
-		var username, password string
-		username, password, err = analyse.GetDockercfgAuth(indexServer)
-		if err != nil {
-			return fmt.Errorf("error reading .dockercfg file: %v", err)
-		}
-
-		err = analyse.Analyse(dockerURL, username, password, flagInsecure)
-	} else {
-		err = analyse.AnalyseFile(flagImage, arg)
-	}
-	if err != nil {
-		return fmt.Errorf("conversion error: %v", err)
-	}
-
-	return nil
-}
-
 func usage() {
 	fmt.Fprintf(os.Stderr, "Usage of %s:\n", os.Args[0])
 	fmt.Fprintf(os.Stderr, "analyzer [--debug] IMAGE\n")
