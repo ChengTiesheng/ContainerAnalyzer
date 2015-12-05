@@ -57,9 +57,8 @@ func analyseReal(backend AnalyseBackend, dockerURL string) error {
 		layerData, _ := backend.GetLayerInfo(layerID, parsedDockerURL)
 
 		imgAttr, _ := attr.AnalyseDockerManifest(*layerData, parsedDockerURL)
-
-		fmt.Println(imgAttr)
-
+		fmt.Println("==========Layer================")
+		printDockerImgAttr(imgAttr)
 	}
 
 	return nil
@@ -72,4 +71,49 @@ func analyseReal(backend AnalyseBackend, dockerURL string) error {
 func stripLayerID(layerName string) string {
 	n := strings.LastIndex(layerName, "-")
 	return layerName[:n]
+}
+
+func printDockerImgAttr(imgAttr *attr.DockerImg_Attr) {
+	fmt.Println("Type: ", imgAttr.Type)
+	fmt.Println("Layer: ", imgAttr.Layer)
+	fmt.Println("Name: ", imgAttr.Name)
+	fmt.Println("Version: ", imgAttr.Version)
+	fmt.Println("OS: ", imgAttr.OS)
+	fmt.Println("Arch: ", imgAttr.Arch)
+	fmt.Println("Author: ", imgAttr.Author)
+	fmt.Println("Epoch: ", imgAttr.Epoch)
+	fmt.Println("Comment: ", imgAttr.Comment)
+	fmt.Println("Parent: ", imgAttr.Parent)
+	printApp(imgAttr.App)
+
+	return
+}
+
+func printApp(app attr.App) {
+	execs := app.Exec
+	if len(execs) > 0 {
+		fmt.Printf("Exec:\n")
+		for _, exec := range execs {
+			fmt.Printf("\targs: %v\n", exec)
+		}
+	}
+
+	mps := app.MountPoints
+	if len(mps) > 0 {
+		fmt.Printf("MountPoints:\n")
+		for _, mp := range mps {
+			fmt.Printf("\tname: %q, path: %q, readOnly: %v\n", mp.Name, mp.Path, mp.ReadOnly)
+		}
+	}
+
+	ports := app.Ports
+	if len(ports) > 0 {
+		fmt.Printf("Ports:\n")
+		for _, port := range ports {
+			fmt.Printf("\tname: %q, protocol: %q, port: %v\n", port.Name, port.Protocol, port.Port)
+
+		}
+	}
+
+	return
 }
