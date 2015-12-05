@@ -13,7 +13,7 @@ import (
 
 type AnalyseBackend interface {
 	GetImageInfo(dockerUrl string) ([]string, *attr.ParsedDockerURL, error)
-	GetLayerInfo(layerID string, dockerURL *attr.ParsedDockerURL) (*attr.DockerImg_Attr, error)
+	GetLayerInfo(layerID string, dockerURL *attr.ParsedDockerURL) (*attr.DockerImageData, error)
 }
 
 func Analyse(dockerURL string, username string, password string, insecure bool) error {
@@ -24,12 +24,12 @@ func Analyse(dockerURL string, username string, password string, insecure bool) 
 func AnalyseFile(dockerURL string, filePath string) error {
 	f, err := os.Open(filePath)
 	if err != nil {
-		return nil, fmt.Errorf("error opening file: %v", err)
+		return fmt.Errorf("error opening file: %v", err)
 	}
 	defer f.Close()
 
 	fileBackend := file.NewFileBackend(f)
-	return convertReal(fileBackend, dockerURL)
+	return analyseReal(fileBackend, dockerURL)
 }
 
 // GetIndexName returns the docker index server from a docker URL.
@@ -48,15 +48,15 @@ func analyseReal(backend AnalyseBackend, dockerURL string) error {
 	fmt.Println("Getting image info...")
 	ancestry, parsedDockerURL, err := backend.GetImageInfo(dockerURL)
 	if err != nil {
-		return nil, err
+		return err
 	}
 
 	for i := len(ancestry) - 1; i >= 0; i-- {
 		layerID := ancestry[i]
 
-		layerData, _ := backend.GetLayerInfo(layerID)
+		layerData, _ := backend.GetLayerInfo(layerID, parsedDockerURL)
 
-		imgAttr := attr.AnalyseDockerManifest(layerData, dockerURL)
+		imgAttr, _ := attr.AnalyseDockerManifest(*layerData, parsedDockerURL)
 
 		fmt.Println(imgAttr)
 

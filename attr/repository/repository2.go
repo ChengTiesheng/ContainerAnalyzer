@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/appc/docker2aci/lib/types"
 	"github.com/chengtiesheng/ContainerAnalyzer/attr"
 	"github.com/coreos/ioprogress"
 )
@@ -38,16 +37,16 @@ func (rb *RepositoryBackend) getLayerInfoV2(layerID string, dockerURL *attr.Pars
 
 	layerIndex, err := getLayerIndex(layerID, manifest)
 	if err != nil {
-		return "", nil, err
+		return nil, err
 	}
 
 	if len(manifest.History) <= layerIndex {
-		return "", nil, fmt.Errorf("history not found for layer %s", layerID)
+		return nil, fmt.Errorf("history not found for layer %s", layerID)
 	}
 
-	layerData := types.DockerImageData{}
+	layerData := attr.DockerImageData{}
 	if err := json.Unmarshal([]byte(manifest.History[layerIndex].V1Compatibility), &layerData); err != nil {
-		return "", nil, fmt.Errorf("error unmarshaling layer data: %v", err)
+		return nil, fmt.Errorf("error unmarshaling layer data: %v", err)
 	}
 
 	return &layerData, nil

@@ -1,9 +1,6 @@
 package repository
 
-import (
-	"github.com/appc/docker2aci/lib/types"
-	"github.com/chengtiesheng/ContainerAnalyzer/attr"
-)
+import "github.com/chengtiesheng/ContainerAnalyzer/attr"
 
 type RepositoryBackend struct {
 	repoData          *RepoData
@@ -54,10 +51,10 @@ func (rb *RepositoryBackend) protocol() string {
 	}
 }
 
-func (rb *RepositoryBackend) GetLayerInfo(layerID string, dockerURL *types.ParsedDockerURL) (*attr.DockerImageData, error) {
+func (rb *RepositoryBackend) GetLayerInfo(layerID string, dockerURL *attr.ParsedDockerURL) (*attr.DockerImageData, error) {
 	if rb.hostsV2Support[dockerURL.IndexURL] {
 		return rb.getLayerInfoV2(layerID, dockerURL)
 	} else {
-		return rb.getLayerV1(layerID, dockerURL)
+		return rb.getLayerInfoV1(layerID, dockerURL)
 	}
 }

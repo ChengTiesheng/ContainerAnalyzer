@@ -12,7 +12,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/appc/docker2aci/lib/types"
 	"github.com/chengtiesheng/ContainerAnalyzer/attr"
 	"github.com/coreos/ioprogress"
 )
@@ -23,9 +22,9 @@ type RepoData struct {
 	Cookie    []string
 }
 
-func (rb *RepositoryBackend) getLayerInfoV1(layerID string, dockerURL *types.ParsedDockerURL) (*attr.DockerImageData, error) {
+func (rb *RepositoryBackend) getLayerInfoV1(layerID string, dockerURL *attr.ParsedDockerURL) (*attr.DockerImageData, error) {
 
-	j, size, err := rb.getJsonV1(layerID, rb.repoData.Endpoints[0], rb.repoData)
+	j, _, err := rb.getJsonV1(layerID, rb.repoData.Endpoints[0], rb.repoData)
 	if err != nil {
 		return nil, nil
 	}
