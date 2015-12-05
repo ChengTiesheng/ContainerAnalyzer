@@ -1,11 +1,10 @@
-package main
+package analyse
 
 import (
 	"fmt"
 	"os"
 	"strings"
 
-	"github.com/appc/docker2aci/lib/common"
 	"github.com/chengtiesheng/ContainerAnalyzer/attr"
 	"github.com/chengtiesheng/ContainerAnalyzer/attr/file"
 	"github.com/chengtiesheng/ContainerAnalyzer/attr/repository"
@@ -34,14 +33,14 @@ func AnalyseFile(dockerURL string, filePath string) error {
 
 // GetIndexName returns the docker index server from a docker URL.
 func GetIndexName(dockerURL string) string {
-	index, _ := common.SplitReposName(dockerURL)
+	index, _ := attr.SplitReposName(dockerURL)
 	return index
 }
 
 // GetDockercfgAuth reads a ~/.dockercfg file and returns the username and password
 // of the given docker index server.
 func GetDockercfgAuth(indexServer string) (string, string, error) {
-	return common.GetAuthInfo(indexServer)
+	return attr.GetAuthInfo(indexServer)
 }
 
 func analyseReal(backend AnalyseBackend, dockerURL string) error {
@@ -51,13 +50,15 @@ func analyseReal(backend AnalyseBackend, dockerURL string) error {
 		return err
 	}
 
+	j := 0
 	for i := len(ancestry) - 1; i >= 0; i-- {
 		layerID := ancestry[i]
 
 		layerData, _ := backend.GetLayerInfo(layerID, parsedDockerURL)
 
 		imgAttr, _ := attr.AnalyseDockerManifest(*layerData, parsedDockerURL)
-		fmt.Println("==========Layer================")
+		j++
+		fmt.Printf("\n============Layer%v================\n", j)
 		printDockerImgAttr(imgAttr)
 	}
 
@@ -74,16 +75,16 @@ func stripLayerID(layerName string) string {
 }
 
 func printDockerImgAttr(imgAttr *attr.DockerImg_Attr) {
-	fmt.Println("Type: ", imgAttr.Type)
-	fmt.Println("Layer: ", imgAttr.Layer)
-	fmt.Println("Name: ", imgAttr.Name)
-	fmt.Println("Version: ", imgAttr.Version)
-	fmt.Println("OS: ", imgAttr.OS)
-	fmt.Println("Arch: ", imgAttr.Arch)
-	fmt.Println("Author: ", imgAttr.Author)
-	fmt.Println("Epoch: ", imgAttr.Epoch)
-	fmt.Println("Comment: ", imgAttr.Comment)
-	fmt.Println("Parent: ", imgAttr.Parent)
+	fmt.Println("Type:     ", imgAttr.Type)
+	fmt.Println("Layer:    ", imgAttr.Layer)
+	fmt.Println("Name:     ", imgAttr.Name)
+	fmt.Println("Version:  ", imgAttr.Version)
+	fmt.Println("OS:       ", imgAttr.OS)
+	fmt.Println("Arch:     ", imgAttr.Arch)
+	fmt.Println("Author:   ", imgAttr.Author)
+	fmt.Println("Epoch:    ", imgAttr.Epoch)
+	fmt.Println("Comment:  ", imgAttr.Comment)
+	fmt.Println("Parent:   ", imgAttr.Parent)
 	printApp(imgAttr.App)
 
 	return

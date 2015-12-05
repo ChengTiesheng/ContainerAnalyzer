@@ -6,10 +6,12 @@ import (
 	"net/url"
 	"os"
 	"strings"
+
+	"github.com/chengtiesheng/ContainerAnalyzer/analyse"
 )
 
 var (
-	flagImage    = flag.String("image", "", "When converting a local file, it selects a particular image to convert. Format: IMAGE_NAME[:TAG]")
+	flagImage    = flag.String("image", "", "When analyse a local file, it selects a particular image to analyse. Format: IMAGE_NAME[:TAG]")
 	flagDebug    = flag.Bool("debug", false, "Enables debug messages")
 	flagInsecure = flag.Bool("insecure", false, "Uses unencrypted connections when fetching images")
 )
@@ -19,7 +21,7 @@ func analyseDockerImage(arg string, flagImage string, flagDebug bool, flagInsecu
 		//TODO
 	}
 
-	// try to convert a local file
+	// try to analyse a local file
 	u, err := url.Parse(arg)
 	if err != nil {
 		return fmt.Errorf("error parsing argument: %v", err)
@@ -30,17 +32,17 @@ func analyseDockerImage(arg string, flagImage string, flagDebug bool, flagInsecu
 		}
 		dockerURL := strings.TrimPrefix(arg, "docker://")
 
-		indexServer := GetIndexName(dockerURL)
+		indexServer := analyse.GetIndexName(dockerURL)
 
 		var username, password string
-		username, password, err = GetDockercfgAuth(indexServer)
+		username, password, err = analyse.GetDockercfgAuth(indexServer)
 		if err != nil {
 			return fmt.Errorf("error reading .dockercfg file: %v", err)
 		}
 
-		err = Analyse(dockerURL, username, password, flagInsecure)
+		err = analyse.Analyse(dockerURL, username, password, flagInsecure)
 	} else {
-		err = AnalyseFile(flagImage, arg)
+		err = analyse.AnalyseFile(flagImage, arg)
 	}
 	if err != nil {
 		return fmt.Errorf("conversion error: %v", err)
