@@ -2,6 +2,7 @@ package analyse
 
 import (
 	"fmt"
+	"net/url"
 	"os"
 	"strings"
 
@@ -31,17 +32,17 @@ func AnalyseDockerImage(arg string, flagImage string, flagDebug bool, flagInsecu
 		}
 		dockerURL := strings.TrimPrefix(arg, "docker://")
 
-		indexServer := analyse.GetIndexName(dockerURL)
+		indexServer := GetIndexName(dockerURL)
 
 		var username, password string
-		username, password, err = analyse.GetDockercfgAuth(indexServer)
+		username, password, err = GetDockercfgAuth(indexServer)
 		if err != nil {
 			return fmt.Errorf("error reading .dockercfg file: %v", err)
 		}
 
-		err = analyse.Analyse(dockerURL, username, password, flagInsecure)
+		err = Analyse(dockerURL, username, password, flagInsecure)
 	} else {
-		err = analyse.AnalyseFile(flagImage, arg)
+		err = AnalyseFile(flagImage, arg)
 	}
 	if err != nil {
 		return fmt.Errorf("conversion error: %v", err)

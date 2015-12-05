@@ -3,9 +3,7 @@ package main
 import (
 	"flag"
 	"fmt"
-	"net/url"
 	"os"
-	"strings"
 
 	"github.com/chengtiesheng/ContainerAnalyzer/analyse"
 )
