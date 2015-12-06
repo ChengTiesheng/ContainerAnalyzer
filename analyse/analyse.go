@@ -97,7 +97,7 @@ func analyseReal(backend AnalyseBackend, dockerURL string) error {
 
 		imgAttr, _ := attr.AnalyseDockerManifest(*layerData, parsedDockerURL)
 		if !bPrinted {
-			fmt.Println("Prompt: Layer0 is the upper layer")
+			fmt.Printf("\nPrompt: Layer0 is the upper layer and layer%d is the bottom layer\n", i)
 			bPrinted = true
 		}
 
