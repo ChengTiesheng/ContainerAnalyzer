@@ -3,17 +3,12 @@ package registry
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"path"
-	"strconv"
 	"strings"
-	"time"
 
 	"github.com/chengtiesheng/ContainerAnalyzer/attr"
-	"github.com/coreos/ioprogress"
 )
 
 const (
@@ -155,69 +150,6 @@ func getLayerIndex(layerID string, manifest v2Manifest) (int, error) {
 		}
 	}
 	return -1, fmt.Errorf("layer not found in manifest: %s", layerID)
-}
-
-func (rb *RepositoryBackend) getLayerV2(layerID string, dockerURL *attr.ParsedDockerURL, tmpDir string) (*os.File, error) {
-	url := rb.protocol() + path.Join(dockerURL.IndexURL, "v2", dockerURL.ImageName, "blobs", layerID)
-	req, err := http.NewRequest("GET", url, nil)
-	if err != nil {
-		return nil, err
-	}
-
-	res, err := rb.makeRequest(req, dockerURL.ImageName)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
-
-	if res.StatusCode != 200 {
-		return nil, fmt.Errorf("HTTP code: %d. URL: %s", res.StatusCode, req.URL)
-	}
-
-	var in io.Reader
-	in = res.Body
-
-	if hdr := res.Header.Get("Content-Length"); hdr != "" {
-		imgSize, err := strconv.ParseInt(hdr, 10, 64)
-		if err != nil {
-			return nil, err
-		}
-
-		prefix := "Downloading " + layerID[:18]
-		fmtBytesSize := 18
-		barSize := int64(80 - len(prefix) - fmtBytesSize)
-		bar := ioprogress.DrawTextFormatBarForW(barSize, os.Stderr)
-		fmtfunc := func(progress, total int64) string {
-			return fmt.Sprintf(
-				"%s: %s %s",
-				prefix,
-				bar(progress, total),
-				ioprogress.DrawTextFormatBytes(progress, total),
-			)
-		}
-		in = &ioprogress.Reader{
-			Reader:       res.Body,
-			Size:         imgSize,
-			DrawFunc:     ioprogress.DrawTerminalf(os.Stderr, fmtfunc),
-			DrawInterval: 500 * time.Millisecond,
-		}
-	}
-
-	layerFile, err := ioutil.TempFile(tmpDir, "dockerlayer-")
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = io.Copy(layerFile, in)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := layerFile.Sync(); err != nil {
-		return nil, err
-	}
-
-	return layerFile, nil
 }
 
 func (rb *RepositoryBackend) makeRequest(req *http.Request, repo string) (*http.Response, error) {

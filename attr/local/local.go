@@ -4,7 +4,6 @@ import (
 	"archive/tar"
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"os"
 	"path"
@@ -178,45 +177,6 @@ func getTarFileBytes(file *os.File, path string) ([]byte, error) {
 	}
 
 	return fileBytes, nil
-}
-
-func extractEmbeddedLayer(file *os.File, layerID string, outputPath string) (*os.File, error) {
-	fmt.Println("Extracting ", layerID[:12], "\n")
-
-	_, err := file.Seek(0, 0)
-	if err != nil {
-		fmt.Errorf("error seeking file: %v", err)
-	}
-
-	layerTarPath := path.Join(layerID, "layer.tar")
-
-	var layerFile *os.File
-	fileWalker := func(t *TarFile) error {
-		if filepath.Clean(t.Name()) == layerTarPath {
-			layerFile, err = os.Create(outputPath)
-			if err != nil {
-				return fmt.Errorf("error creating layer: %v", err)
-			}
-
-			_, err = io.Copy(layerFile, t.TarStream)
-			if err != nil {
-				return fmt.Errorf("error getting layer: %v", err)
-			}
-		}
-
-		return nil
-	}
-
-	tr := tar.NewReader(file)
-	if err := Walk(*tr, fileWalker); err != nil {
-		return nil, err
-	}
-
-	if layerFile == nil {
-		return nil, fmt.Errorf("file %q not found", layerTarPath)
-	}
-
-	return layerFile, nil
 }
 
 func getAncestry(file *os.File, imgID string) ([]string, error) {

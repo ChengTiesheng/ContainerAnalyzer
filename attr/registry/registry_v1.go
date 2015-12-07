@@ -3,17 +3,13 @@ package registry
 import (
 	"encoding/json"
 	"fmt"
-	"io"
 	"io/ioutil"
 	"net/http"
-	"os"
 	"path"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/chengtiesheng/ContainerAnalyzer/attr"
-	"github.com/coreos/ioprogress"
 )
 
 type RepoData struct {
@@ -218,75 +214,6 @@ func (rb *RepositoryBackend) getJsonV1(imgID, registry string, repoData *RepoDat
 	}
 
 	return b, imageSize, nil
-}
-
-func (rb *RepositoryBackend) getLayerV1(imgID, registry string, repoData *RepoData, imgSize int64, tmpDir string) (*os.File, error) {
-	client := &http.Client{}
-	req, err := http.NewRequest("GET", rb.protocol()+path.Join(registry, "images", imgID, "layer"), nil)
-	if err != nil {
-		return nil, err
-	}
-
-	setAuthTokenV1(req, repoData.Tokens)
-	setCookieV1(req, repoData.Cookie)
-
-	res, err := client.Do(req)
-	if err != nil {
-		return nil, err
-	}
-	defer res.Body.Close()
-
-	if res.StatusCode != 200 {
-		res.Body.Close()
-		return nil, fmt.Errorf("HTTP code: %d. URL: %s", res.StatusCode, req.URL)
-	}
-
-	// if we didn't receive the size via X-Docker-Size when we retrieved the
-	// layer's json, try Content-Length
-	if imgSize == -1 {
-		if hdr := res.Header.Get("Content-Length"); hdr != "" {
-			imgSize, err = strconv.ParseInt(hdr, 10, 64)
-			if err != nil {
-				return nil, err
-			}
-		}
-	}
-
-	prefix := "Downloading " + imgID[:12]
-	fmtBytesSize := 18
-	barSize := int64(80 - len(prefix) - fmtBytesSize)
-	bar := ioprogress.DrawTextFormatBarForW(barSize, os.Stderr)
-	fmtfunc := func(progress, total int64) string {
-		return fmt.Sprintf(
-			"%s: %s %s",
-			prefix,
-			bar(progress, total),
-			ioprogress.DrawTextFormatBytes(progress, total),
-		)
-	}
-
-	progressReader := &ioprogress.Reader{
-		Reader:       res.Body,
-		Size:         imgSize,
-		DrawFunc:     ioprogress.DrawTerminalf(os.Stderr, fmtfunc),
-		DrawInterval: 500 * time.Millisecond,
-	}
-
-	layerFile, err := ioutil.TempFile(tmpDir, "dockerlayer-")
-	if err != nil {
-		return nil, err
-	}
-
-	_, err = io.Copy(layerFile, progressReader)
-	if err != nil {
-		return nil, err
-	}
-
-	if err := layerFile.Sync(); err != nil {
-		return nil, err
-	}
-
-	return layerFile, nil
 }
 
 func setAuthTokenV1(req *http.Request, token []string) {
