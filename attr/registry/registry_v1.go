@@ -18,7 +18,7 @@ type RepoData struct {
 	Cookie    []string
 }
 
-func (rb *RepositoryBackend) getLayerInfoV1(layerID string, dockerURL *attr.ParsedDockerURL) (*attr.DockerImageData, error) {
+func (rb *RepoBackend) getLayerInfoV1(layerID string, dockerURL *attr.ParsedDockerURL) (*attr.DockerImageData, error) {
 
 	j, _, err := rb.getJsonV1(layerID, rb.repoData.Endpoints[0], rb.repoData)
 	if err != nil {
@@ -33,7 +33,7 @@ func (rb *RepositoryBackend) getLayerInfoV1(layerID string, dockerURL *attr.Pars
 	return &layerData, nil
 }
 
-func (rb *RepositoryBackend) getImageInfoV1(dockerURL *attr.ParsedDockerURL) ([]string, *attr.ParsedDockerURL, error) {
+func (rb *RepoBackend) getImageInfoV1(dockerURL *attr.ParsedDockerURL) ([]string, *attr.ParsedDockerURL, error) {
 	repoData, err := rb.getRepoDataV1(dockerURL.IndexURL, dockerURL.ImageName)
 	if err != nil {
 		return nil, nil, fmt.Errorf("error getting repository data: %v", err)
@@ -55,11 +55,11 @@ func (rb *RepositoryBackend) getImageInfoV1(dockerURL *attr.ParsedDockerURL) ([]
 	return ancestry, dockerURL, nil
 }
 
-func (rb *RepositoryBackend) getRepoDataV1(indexURL string, remote string) (*RepoData, error) {
+func (rb *RepoBackend) getRepoDataV1(indexURL string, remote string) (*RepoData, error) {
 	client := &http.Client{}
-	repositoryURL := rb.protocol() + path.Join(indexURL, "v1", "repositories", remote, "images")
+	repoURL := rb.protocol() + path.Join(indexURL, "v1", "repositories", remote, "images")
 
-	req, err := http.NewRequest("GET", repositoryURL, nil)
+	req, err := http.NewRequest("GET", repoURL, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +105,7 @@ func (rb *RepositoryBackend) getRepoDataV1(indexURL string, remote string) (*Rep
 	}, nil
 }
 
-func (rb *RepositoryBackend) getImageIDFromTagV1(registry string, appName string, tag string, repoData *RepoData) (string, error) {
+func (rb *RepoBackend) getImageIDFromTagV1(registry string, appName string, tag string, repoData *RepoData) (string, error) {
 	client := &http.Client{}
 	// we get all the tags instead of directly getting the imageID of the
 	// requested one (.../tags/TAG) because even though it's specified in the
@@ -148,7 +148,7 @@ func (rb *RepositoryBackend) getImageIDFromTagV1(registry string, appName string
 	return imageID, nil
 }
 
-func (rb *RepositoryBackend) getAncestryV1(imgID, registry string, repoData *RepoData) ([]string, error) {
+func (rb *RepoBackend) getAncestryV1(imgID, registry string, repoData *RepoData) ([]string, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", rb.protocol()+path.Join(registry, "images", imgID, "ancestry"), nil)
 	if err != nil {
@@ -181,7 +181,7 @@ func (rb *RepositoryBackend) getAncestryV1(imgID, registry string, repoData *Rep
 	return ancestry, nil
 }
 
-func (rb *RepositoryBackend) getJsonV1(imgID, registry string, repoData *RepoData) ([]byte, int64, error) {
+func (rb *RepoBackend) getJsonV1(imgID, registry string, repoData *RepoData) ([]byte, int64, error) {
 	client := &http.Client{}
 	req, err := http.NewRequest("GET", rb.protocol()+path.Join(registry, "images", imgID, "json"), nil)
 	if err != nil {

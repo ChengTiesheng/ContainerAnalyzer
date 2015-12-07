@@ -27,7 +27,7 @@ type v2Manifest struct {
 	Signature []byte `json:"signature"`
 }
 
-func (rb *RepositoryBackend) getLayerInfoV2(layerID string, dockerURL *attr.ParsedDockerURL) (*attr.DockerImageData, error) {
+func (rb *RepoBackend) getLayerInfoV2(layerID string, dockerURL *attr.ParsedDockerURL) (*attr.DockerImageData, error) {
 	manifest := rb.imageManifests[*dockerURL]
 
 	layerIndex, err := getLayerIndex(layerID, manifest)
@@ -47,7 +47,7 @@ func (rb *RepositoryBackend) getLayerInfoV2(layerID string, dockerURL *attr.Pars
 	return &layerData, nil
 }
 
-func (rb *RepositoryBackend) supportsV2(indexURL string) (bool, error) {
+func (rb *RepoBackend) supportsV2(indexURL string) (bool, error) {
 	url := rb.protocol() + path.Join(indexURL, "v2")
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -79,7 +79,7 @@ func (rb *RepositoryBackend) supportsV2(indexURL string) (bool, error) {
 	}
 }
 
-func (rb *RepositoryBackend) getImageInfoV2(dockerURL *attr.ParsedDockerURL) ([]string, *attr.ParsedDockerURL, error) {
+func (rb *RepoBackend) getImageInfoV2(dockerURL *attr.ParsedDockerURL) ([]string, *attr.ParsedDockerURL, error) {
 	manifest, layers, err := rb.getManifestV2(dockerURL)
 	if err != nil {
 		return nil, nil, err
@@ -90,7 +90,7 @@ func (rb *RepositoryBackend) getImageInfoV2(dockerURL *attr.ParsedDockerURL) ([]
 	return layers, dockerURL, nil
 }
 
-func (rb *RepositoryBackend) getManifestV2(dockerURL *attr.ParsedDockerURL) (*v2Manifest, []string, error) {
+func (rb *RepoBackend) getManifestV2(dockerURL *attr.ParsedDockerURL) (*v2Manifest, []string, error) {
 	url := rb.protocol() + path.Join(dockerURL.IndexURL, "v2", dockerURL.ImageName, "manifests", dockerURL.Tag)
 
 	req, err := http.NewRequest("GET", url, nil)
@@ -152,7 +152,7 @@ func getLayerIndex(layerID string, manifest v2Manifest) (int, error) {
 	return -1, fmt.Errorf("layer not found in manifest: %s", layerID)
 }
 
-func (rb *RepositoryBackend) makeRequest(req *http.Request, repo string) (*http.Response, error) {
+func (rb *RepoBackend) makeRequest(req *http.Request, repo string) (*http.Response, error) {
 	setBearerHeader := false
 	hostAuthTokens, ok := rb.hostsV2AuthTokens[req.URL.Host]
 	if ok {

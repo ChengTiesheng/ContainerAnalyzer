@@ -55,8 +55,8 @@ func AnalyseDockerImage(arg string, flagImage string, flagDebug bool, flagInsecu
 }
 
 func AnalyseRegistry(dockerURL string, username string, password string, insecure bool) error {
-	repositoryBackend := registry.NewRepositoryBackend(username, password, insecure)
-	return analyseReal(repositoryBackend, dockerURL)
+	repoBackend := registry.NewRepoBackend(username, password, insecure)
+	return analyseReal(repoBackend, dockerURL)
 }
 
 func AnalyseLocal(dockerURL string, filePath string) error {

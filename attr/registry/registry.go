@@ -2,7 +2,7 @@ package registry
 
 import "github.com/chengtiesheng/ContainerAnalyzer/attr"
 
-type RepositoryBackend struct {
+type RepoBackend struct {
 	repoData          *RepoData
 	username          string
 	password          string
@@ -12,8 +12,8 @@ type RepositoryBackend struct {
 	imageManifests    map[attr.ParsedDockerURL]v2Manifest
 }
 
-func NewRepositoryBackend(username string, password string, insecure bool) *RepositoryBackend {
-	return &RepositoryBackend{
+func NewRepoBackend(username string, password string, insecure bool) *RepoBackend {
+	return &RepoBackend{
 		username:          username,
 		password:          password,
 		insecure:          insecure,
@@ -23,7 +23,7 @@ func NewRepositoryBackend(username string, password string, insecure bool) *Repo
 	}
 }
 
-func (rb *RepositoryBackend) GetImageInfo(url string) ([]string, *attr.ParsedDockerURL, error) {
+func (rb *RepoBackend) GetImageInfo(url string) ([]string, *attr.ParsedDockerURL, error) {
 	dockerURL := attr.ParseDockerURL(url)
 
 	var supportsV2, ok bool
@@ -43,7 +43,7 @@ func (rb *RepositoryBackend) GetImageInfo(url string) ([]string, *attr.ParsedDoc
 	}
 }
 
-func (rb *RepositoryBackend) protocol() string {
+func (rb *RepoBackend) protocol() string {
 	if rb.insecure {
 		return "http://"
 	} else {
@@ -51,7 +51,7 @@ func (rb *RepositoryBackend) protocol() string {
 	}
 }
 
-func (rb *RepositoryBackend) GetLayerInfo(layerID string, dockerURL *attr.ParsedDockerURL) (*attr.DockerImageData, error) {
+func (rb *RepoBackend) GetLayerInfo(layerID string, dockerURL *attr.ParsedDockerURL) (*attr.DockerImageData, error) {
 	if rb.hostsV2Support[dockerURL.IndexURL] {
 		return rb.getLayerInfoV2(layerID, dockerURL)
 	} else {

@@ -43,12 +43,12 @@ func (lb *FileBackend) GetLayerInfo(layerID string, dockerURL *attr.ParsedDocker
 
 	j, err := getJson(lb.file, layerID)
 	if err != nil {
-		return nil, nil
+		return nil, err
 	}
 
 	layerData := attr.DockerImageData{}
 	if err := json.Unmarshal(j, &layerData); err != nil {
-		return nil, nil
+		return nil, err
 	}
 
 	return &layerData, nil
