@@ -121,6 +121,7 @@ func printDockerImgAttr(imgAttr *attr.DockerImg_Attr) {
 	fmt.Println("Type:     ", imgAttr.Type)
 	fmt.Println("Layer:    ", imgAttr.Layer)
 	fmt.Println("Name:     ", imgAttr.Name)
+	fmt.Println("Tag:      ", imgAttr.Tag)
 	fmt.Println("Version:  ", imgAttr.Version)
 	fmt.Println("OS:       ", imgAttr.OS)
 	fmt.Println("Arch:     ", imgAttr.Arch)
@@ -128,6 +129,7 @@ func printDockerImgAttr(imgAttr *attr.DockerImg_Attr) {
 	fmt.Println("Epoch:    ", imgAttr.Epoch)
 	fmt.Println("Comment:  ", imgAttr.Comment)
 	fmt.Println("Parent:   ", imgAttr.Parent)
+	fmt.Println("Checksum: ", imgAttr.Checksum)
 	printApp(imgAttr.App)
 
 	return

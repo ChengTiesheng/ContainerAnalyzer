@@ -6,17 +6,19 @@ import (
 )
 
 type DockerImg_Attr struct {
-	Type    string `json:"type"` // required= "dockerimage"
-	Layer   string `json:"layer"`
-	Name    string `json:"name"`
-	Version string `json:"version"`
-	OS      string `json:"os"`
-	Arch    string `json:"arch"`
-	Author  string `json:"author"`
-	Epoch   string `json:"epoch"`
-	Comment string `json:"comment"`
-	Parent  string `json:"parent"`
-	App     App    `json:"app"`
+	Type     string `json:"type"` // required= "dockerimage"
+	Layer    string `json:"layer"`
+	Name     string `json:"name"`
+	Tag      string `json:"tag"`
+	Version  string `json:"version"`
+	OS       string `json:"os"`
+	Arch     string `json:"arch"`
+	Author   string `json:"author"`
+	Epoch    string `json:"epoch"`
+	Comment  string `json:"comment"`
+	Parent   string `json:"parent"`
+	Checksum string `json:"checksum"`
+	App      App    `json:"app"`
 }
 
 type Exec []string
@@ -33,44 +35,14 @@ type ParsedDockerURL struct {
 	Tag       string
 }
 
-type EventHandler struct {
-	Name string `json:"name"`
-	Exec Exec   `json:"exec"`
-}
-
-type Hash struct {
-	typ string
-	Val string
-}
-
-type Labels []Label
-
-type labels Labels
-
-type Label struct {
-	Name  string `json:"name"`
-	Value string `json:"value"`
-}
-
-type Dependencies []Dependency
-
-type Dependency struct {
-	ImageName string `json:"imageName"`
-	ImageID   *Hash  `json:"imageID,omitempty"`
-	Labels    Labels `json:"labels,omitempty"`
-	Size      uint   `json:"size,omitempty"`
-}
-
 type App struct {
-	Exec              Exec           `json:"exec"`
-	EventHandlers     []EventHandler `json:"eventHandlers,omitempty"`
-	User              string         `json:"user"`
-	Group             string         `json:"group"`
-	SupplementaryGIDs []int          `json:"supplementaryGIDs,omitempty"`
-	WorkingDirectory  string         `json:"workingDirectory,omitempty"`
-	Environment       Environment    `json:"environment,omitempty"`
-	MountPoints       []MountPoint   `json:"mountPoints,omitempty"`
-	Ports             []Port         `json:"ports,omitempty"`
+	Exec             Exec         `json:"exec"`
+	User             string       `json:"user"`
+	Group            string       `json:"group"`
+	WorkingDirectory string       `json:"workingDirectory,omitempty"`
+	Environment      Environment  `json:"environment,omitempty"`
+	MountPoints      []MountPoint `json:"mountPoints,omitempty"`
+	Ports            []Port       `json:"ports,omitempty"`
 }
 
 type MountPoint struct {
@@ -107,7 +79,7 @@ func AnalyseDockerManifest(layerData DockerImageData, dockerURL *ParsedDockerURL
 	dockerConfig := layerData.Config
 	imgAttr := &DockerImg_Attr{}
 
-	imgAttr.Type = "dockerimage"
+	imgAttr.Type = "Docker Image Layer"
 
 	imgAttr.Layer = layerData.ID
 
@@ -116,7 +88,11 @@ func AnalyseDockerManifest(layerData DockerImageData, dockerURL *ParsedDockerURL
 	imgAttr.Name = url
 
 	tag := dockerURL.Tag
-	imgAttr.Version = tag
+	imgAttr.Tag = tag
+
+	imgAttr.Version = layerData.DockerVersion
+
+	imgAttr.Checksum = layerData.Checksum
 
 	if layerData.OS != "" {
 		os := layerData.OS
