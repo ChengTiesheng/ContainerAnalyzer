@@ -1,7 +1,7 @@
 # ContainerAnalyzer
 
 ## Examples
-
+```
 $ docker save -o redis.tar redis
 $ ./ContainerAnalyzer redis.tar
 Getting image attribution information...
@@ -374,3 +374,5 @@ App:
 		name: "volume/data", path: "/data", readOnly: false
 	Ports:
 		name: "6379/tcp", protocol: "tcp", port: 6379
+
+```
