@@ -1,7 +1,6 @@
 package attr
 
 import (
-	"encoding/json"
 	"strings"
 	"time"
 )
@@ -18,29 +17,6 @@ type DockerImg_Attr struct {
 	Comment string `json:"comment"`
 	Parent  string `json:"parent"`
 	App     App    `json:"app"`
-}
-
-func (imgAttr *DockerImg_Attr) GetAttr(imgData *DockerImageData) error {
-	//imgAttr.Type = "dockerimage"
-	//imgAttr.Id = imgData.ID
-
-	return nil
-}
-
-func (imgAttr *DockerImg_Attr) GetAttrFromJson(j []byte) error {
-	layerData := DockerImageData{}
-	if err := json.Unmarshal(j, &layerData); err != nil {
-		return err
-	}
-
-	//imgAttr.Id = layerData.ID
-	imgAttr.Name = layerData.Author
-
-	return nil
-}
-
-func getDockerImgAttr(imgData *DockerImageData, imgAttr *DockerImg_Attr) error {
-	return nil
 }
 
 type Exec []string

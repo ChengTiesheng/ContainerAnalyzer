@@ -134,27 +134,52 @@ func printDockerImgAttr(imgAttr *attr.DockerImg_Attr) {
 }
 
 func printApp(app attr.App) {
+	fmt.Printf("App:\n")
+
 	execs := app.Exec
 	if len(execs) > 0 {
-		fmt.Printf("Exec:\n")
+		fmt.Printf("\tExec:\n")
 		for _, exec := range execs {
-			fmt.Printf("\targs: %v\n", exec)
+			fmt.Printf("\t\targ: %v\n", exec)
 		}
+	}
+
+	user := app.User
+	if user != "" {
+		fmt.Printf("\tUser: %v\n", user)
+	}
+
+	group := app.Group
+	if group != "" {
+		fmt.Printf("\tGroup: %v\n", group)
+	}
+
+	envs := app.Environment
+	if len(envs) > 0 {
+		fmt.Printf("\tEnvironment:\n")
+		for _, env := range envs {
+			fmt.Printf("\t\tname :%q, value :%q\n", env.Name, env.Value)
+		}
+	}
+
+	wd := app.WorkingDirectory
+	if wd != "" {
+		fmt.Printf("\tWorkingDirectory: %v\n", wd)
 	}
 
 	mps := app.MountPoints
 	if len(mps) > 0 {
-		fmt.Printf("MountPoints:\n")
+		fmt.Printf("\tMountPoints:\n")
 		for _, mp := range mps {
-			fmt.Printf("\tname: %q, path: %q, readOnly: %v\n", mp.Name, mp.Path, mp.ReadOnly)
+			fmt.Printf("\t\tname: %q, path: %q, readOnly: %v\n", mp.Name, mp.Path, mp.ReadOnly)
 		}
 	}
 
 	ports := app.Ports
 	if len(ports) > 0 {
-		fmt.Printf("Ports:\n")
+		fmt.Printf("\tPorts:\n")
 		for _, port := range ports {
-			fmt.Printf("\tname: %q, protocol: %q, port: %v\n", port.Name, port.Protocol, port.Port)
+			fmt.Printf("\t\tname: %q, protocol: %q, port: %v\n", port.Name, port.Protocol, port.Port)
 
 		}
 	}
