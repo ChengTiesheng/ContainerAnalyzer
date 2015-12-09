@@ -11,10 +11,6 @@ import (
 	"github.com/chengtiesheng/ContainerAnalyzer/attr"
 )
 
-const (
-	defaultIndexURL = "registry-1.docker.io"
-)
-
 type v2Manifest struct {
 	Name     string `json:"name"`
 	Tag      string `json:"tag"`
