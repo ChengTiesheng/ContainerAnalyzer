@@ -1,6 +1,53 @@
 # ContainerAnalyzer
 
 ## Examples
+- Analyse image from In-Cloud
+```
+$ ./ContainerAnalyzer docker://busybox
+Getting image attribution information...
+
+Prompt: Layer0 is the upper layer and layer1 is the bottom layer
+
+============Layer1================
+Type:      Docker Image Layer
+Layer:     5c5fb281b01ee091a0fffa5b4a4c7fb7d358e7fb7c49c263d6d7a4e35d199fd0
+Name:      registry-1.docker.io/library/busybox-5c5fb281b01ee091a0fffa5b4a4c7fb7d358e7fb7c49c263d6d7a4e35d199fd0
+Tag:       latest
+Version:   1.8.3
+OS:        linux
+Arch:      amd64
+Author:    
+Epoch:     2015-12-08T18:31:50Z
+Comment:   
+Parent:    
+Checksum:  
+App:
+
+============Layer0================
+Type:      Docker Image Layer
+Layer:     fc0db02f30724abc777d7ae2b2404c6d074f1e2ceca19912352aea30a42f50b7
+Name:      registry-1.docker.io/library/busybox-fc0db02f30724abc777d7ae2b2404c6d074f1e2ceca19912352aea30a42f50b7
+Tag:       latest
+Version:   1.8.3
+OS:        linux
+Arch:      amd64
+Author:    
+Epoch:     2015-12-08T18:31:51Z
+Comment:   
+Parent:    registry-1.docker.io/library/busybox-5c5fb281b01ee091a0fffa5b4a4c7fb7d358e7fb7c49c263d6d7a4e35d199fd0
+Checksum:  
+App:
+	Exec:
+		arg: /bin/sh
+		arg: -c
+		arg: "sh"
+	User: 0
+	Group: 0
+
+```
+
+- Analyse image file On-Premises
+
 ```
 $ docker save -o redis.tar redis
 $ ./ContainerAnalyzer redis.tar
